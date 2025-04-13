@@ -1,0 +1,183 @@
+
+import { Event, EventEntry, EventReport, Partner } from "@/types";
+import { mockEvents, mockEventEntries } from "./mockData";
+import { toast } from "@/hooks/use-toast";
+
+// In-memory storage for mock data
+let events: Event[] = [...mockEvents];
+let eventEntries: EventEntry[] = [...mockEventEntries];
+
+// Event CRUD operations
+export const getEvents = (): Promise<Event[]> => {
+  return Promise.resolve([...events].sort((a, b) => b.date.getTime() - a.date.getTime()));
+};
+
+export const getEvent = (id: string): Promise<Event | undefined> => {
+  const event = events.find(e => e.id === id);
+  return Promise.resolve(event);
+};
+
+export const createEvent = (eventData: Omit<Event, 'id' | 'createdAt'>): Promise<Event> => {
+  const newEvent: Event = {
+    ...eventData,
+    id: `evt-${Date.now()}`,
+    createdAt: new Date()
+  };
+  
+  events.push(newEvent);
+  toast({
+    title: "Event created",
+    description: `${newEvent.name} has been created successfully.`
+  });
+  
+  return Promise.resolve(newEvent);
+};
+
+export const updateEvent = (id: string, eventData: Partial<Event>): Promise<Event | undefined> => {
+  const index = events.findIndex(e => e.id === id);
+  if (index === -1) return Promise.resolve(undefined);
+  
+  const updatedEvent = {
+    ...events[index],
+    ...eventData
+  };
+  
+  events[index] = updatedEvent;
+  toast({
+    title: "Event updated",
+    description: `${updatedEvent.name} has been updated successfully.`
+  });
+  
+  return Promise.resolve(updatedEvent);
+};
+
+export const deleteEvent = (id: string): Promise<boolean> => {
+  const initialLength = events.length;
+  events = events.filter(e => e.id !== id);
+  
+  if (events.length < initialLength) {
+    eventEntries = eventEntries.filter(entry => entry.eventId !== id);
+    toast({
+      title: "Event deleted",
+      description: "Event and all associated data have been deleted."
+    });
+    return Promise.resolve(true);
+  }
+  
+  return Promise.resolve(false);
+};
+
+// Event Entry CRUD operations
+export const getEventEntries = (eventId?: string): Promise<EventEntry[]> => {
+  let filteredEntries = [...eventEntries];
+  if (eventId) {
+    filteredEntries = filteredEntries.filter(entry => entry.eventId === eventId);
+  }
+  return Promise.resolve(filteredEntries.sort((a, b) => b.date.getTime() - a.date.getTime()));
+};
+
+export const getEventEntry = (id: string): Promise<EventEntry | undefined> => {
+  const entry = eventEntries.find(e => e.id === id);
+  return Promise.resolve(entry);
+};
+
+export const createEventEntry = (entryData: Omit<EventEntry, 'id' | 'createdAt'>): Promise<EventEntry> => {
+  const newEntry: EventEntry = {
+    ...entryData,
+    id: `entry-${Date.now()}`,
+    createdAt: new Date()
+  };
+  
+  eventEntries.push(newEntry);
+  toast({
+    title: "Entry created",
+    description: `Event entry for ${new Date(newEntry.date).toLocaleDateString()} has been created.`
+  });
+  
+  return Promise.resolve(newEntry);
+};
+
+export const updateEventEntry = (id: string, entryData: Partial<EventEntry>): Promise<EventEntry | undefined> => {
+  const index = eventEntries.findIndex(e => e.id === id);
+  if (index === -1) return Promise.resolve(undefined);
+  
+  const updatedEntry = {
+    ...eventEntries[index],
+    ...entryData
+  };
+  
+  eventEntries[index] = updatedEntry;
+  toast({
+    title: "Entry updated",
+    description: `Event entry for ${new Date(updatedEntry.date).toLocaleDateString()} has been updated.`
+  });
+  
+  return Promise.resolve(updatedEntry);
+};
+
+export const deleteEventEntry = (id: string): Promise<boolean> => {
+  const initialLength = eventEntries.length;
+  eventEntries = eventEntries.filter(e => e.id !== id);
+  
+  if (eventEntries.length < initialLength) {
+    toast({
+      title: "Entry deleted",
+      description: "Event entry has been deleted."
+    });
+    return Promise.resolve(true);
+  }
+  
+  return Promise.resolve(false);
+};
+
+// Calculate event report
+export const calculateEventReport = async (eventId: string, entryId?: string): Promise<EventReport | null> => {
+  const event = await getEvent(eventId);
+  if (!event) return null;
+  
+  let entries: EventEntry[];
+  
+  if (entryId) {
+    const entry = await getEventEntry(entryId);
+    entries = entry ? [entry] : [];
+  } else {
+    entries = await getEventEntries(eventId);
+  }
+  
+  if (entries.length === 0) return null;
+  
+  // For this example, we'll just use the first entry if there are multiple
+  const entry = entries[0];
+  
+  // Calculate total commissions
+  const promoterCommissions = entry.promoters.reduce((sum, p) => sum + p.commission, 0);
+  const staffPayments = entry.staff.reduce((sum, s) => sum + s.payment, 0);
+  const totalCommissions = promoterCommissions + staffPayments + entry.tableCommissions + entry.vipGirlsCommissions;
+  
+  // Calculate total expenses
+  const totalExpenses = entry.adSpend + totalCommissions;
+  
+  // Calculate total revenue and Rumba's share
+  let totalRevenue = 0;
+  if (event.dealType === "Entrance Deal" && entry.doorRevenue) {
+    totalRevenue = entry.doorRevenue;
+  } else if (event.dealType === "Revenue Share" && entry.totalNightRevenue) {
+    totalRevenue = entry.totalNightRevenue;
+  }
+  
+  const rumbaShare = totalRevenue * (event.rumbaPercentage / 100);
+  
+  // Calculate profit
+  const profit = rumbaShare - totalExpenses;
+  
+  return {
+    totalRevenue,
+    rumbaShare,
+    totalAttendance: entry.attendance,
+    tablesFromRumba: entry.tablesFromRumba,
+    totalCommissions,
+    totalExpenses,
+    profit,
+    daysUntilPaid: entry.daysUntilPaid
+  };
+};
