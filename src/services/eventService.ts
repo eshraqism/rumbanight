@@ -19,13 +19,16 @@ let eventEntries: EventEntry[] = [...mockEventEntries];
 export const getEvents = (): Promise<Event[]> => {
   // TODO: Replace with MySQL query
   // Example MySQL query: SELECT * FROM events ORDER BY date DESC
+  console.log("Fetching events:", events);
   return Promise.resolve([...events].sort((a, b) => b.date.getTime() - a.date.getTime()));
 };
 
 export const getEvent = (id: string): Promise<Event | undefined> => {
   // TODO: Replace with MySQL query
   // Example MySQL query: SELECT * FROM events WHERE id = ?
+  console.log("Finding event with ID:", id);
   const event = events.find(e => e.id === id);
+  console.log("Found event:", event);
   return Promise.resolve(event);
 };
 
@@ -91,10 +94,12 @@ export const deleteEvent = (id: string): Promise<boolean> => {
 export const getEventEntries = (eventId?: string): Promise<EventEntry[]> => {
   // TODO: Replace with MySQL query
   // Example MySQL query: SELECT * FROM event_entries WHERE event_id = ? ORDER BY date DESC
+  console.log("Fetching entries for eventId:", eventId);
   let filteredEntries = [...eventEntries];
   if (eventId) {
     filteredEntries = filteredEntries.filter(entry => entry.eventId === eventId);
   }
+  console.log("Filtered entries:", filteredEntries);
   return Promise.resolve(filteredEntries.sort((a, b) => b.date.getTime() - a.date.getTime()));
 };
 
@@ -111,6 +116,8 @@ export const createEventEntry = (entryData: Omit<EventEntry, 'id' | 'createdAt'>
   // 1. INSERT INTO event_entries (...) VALUES (...)
   // 2. INSERT INTO promoters (entry_id, name, commission) VALUES (...)
   // 3. INSERT INTO staff (entry_id, role, name, payment) VALUES (...)
+  console.log("Creating new event entry:", entryData);
+  
   const newEntry: EventEntry = {
     ...entryData,
     id: `entry-${Date.now()}`,
@@ -118,6 +125,9 @@ export const createEventEntry = (entryData: Omit<EventEntry, 'id' | 'createdAt'>
   };
   
   eventEntries.push(newEntry);
+  console.log("New entry created:", newEntry);
+  console.log("Updated entries list:", eventEntries);
+  
   toast({
     title: "Entry created",
     description: `Event entry for ${new Date(newEntry.date).toLocaleDateString()} has been created.`
@@ -170,8 +180,12 @@ export const deleteEventEntry = (id: string): Promise<boolean> => {
 export const calculateEventReport = async (eventId: string, entryId?: string): Promise<EventReport | null> => {
   // TODO: Replace with MySQL query
   // Example MySQL query: Use JOINs to get event and entry data together
+  console.log("Calculating report for event:", eventId);
   const event = await getEvent(eventId);
-  if (!event) return null;
+  if (!event) {
+    console.log("Event not found");
+    return null;
+  }
   
   let entries: EventEntry[];
   
@@ -182,7 +196,12 @@ export const calculateEventReport = async (eventId: string, entryId?: string): P
     entries = await getEventEntries(eventId);
   }
   
-  if (entries.length === 0) return null;
+  if (entries.length === 0) {
+    console.log("No entries found for event");
+    return null;
+  }
+  
+  console.log("Found entries:", entries);
   
   // For this example, we'll just use the first entry if there are multiple
   const entry = entries[0];
@@ -208,7 +227,7 @@ export const calculateEventReport = async (eventId: string, entryId?: string): P
   // Calculate profit
   const profit = rumbaShare - totalExpenses;
   
-  return {
+  const report = {
     totalRevenue,
     rumbaShare,
     totalAttendance: entry.attendance,
@@ -218,4 +237,7 @@ export const calculateEventReport = async (eventId: string, entryId?: string): P
     profit,
     daysUntilPaid: entry.daysUntilPaid
   };
+  
+  console.log("Generated report:", report);
+  return report;
 };
