@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Calendar, Clock, MapPin, Percentage, Database,
+  Calendar, Clock, MapPin, Percent, Database,
   Edit, Trash2, Plus, BarChart3, Users, DollarSign
 } from 'lucide-react';
 import { 
@@ -50,11 +49,9 @@ const EventDetails: React.FC = () => {
 
         setEvent(eventData);
 
-        // Fetch entries for this event
         const entriesData = await getEventEntries(id);
         setEntries(entriesData);
 
-        // Calculate report if we have entries
         if (entriesData.length > 0) {
           const reportData = await calculateEventReport(id);
           setReport(reportData);
@@ -157,7 +154,6 @@ const EventDetails: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Event Details */}
         <Card className="bg-nightlife-800 border-nightlife-700 md:col-span-2">
           <CardHeader>
             <CardTitle>Event Details</CardTitle>
@@ -199,7 +195,7 @@ const EventDetails: React.FC = () => {
               </div>
 
               <div className="flex items-start space-x-3">
-                <Percentage className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <Percent className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="font-medium">Deal Type</p>
                   <p className="text-muted-foreground">{event.dealType}</p>
@@ -246,7 +242,6 @@ const EventDetails: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
         <Card className="bg-nightlife-800 border-nightlife-700">
           <CardHeader>
             <CardTitle>Actions</CardTitle>
@@ -276,7 +271,6 @@ const EventDetails: React.FC = () => {
         </Card>
       </div>
 
-      {/* Event Entries */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">Event Entries</h2>
@@ -375,7 +369,6 @@ const EventDetails: React.FC = () => {
         )}
       </div>
 
-      {/* Event Summary/Report */}
       {report && (
         <div className="mt-8">
           <h2 className="text-2xl font-bold mb-6">Event Summary</h2>
@@ -399,7 +392,7 @@ const EventDetails: React.FC = () => {
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 rounded-full bg-primary/10">
-                    <Percentage className="h-6 w-6 text-primary" />
+                    <Percent className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Rumba's Share</p>
@@ -457,7 +450,6 @@ const EventDetails: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent className="bg-nightlife-800 border-nightlife-700">
           <AlertDialogHeader>
