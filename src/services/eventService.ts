@@ -3,21 +3,35 @@ import { Event, EventEntry, EventReport, Partner } from "@/types";
 import { mockEvents, mockEventEntries } from "./mockData";
 import { toast } from "@/hooks/use-toast";
 
+// NOTE: This is currently using mock data
+// TODO: Replace with MySQL backend implementation
+// MySQL backend will require:
+// 1. Setting up a Node.js/Express or Python/Flask server
+// 2. Configuring MySQL database connection
+// 3. Creating tables for events, entries, partners, promoters, staff
+// 4. Implementing RESTful API endpoints for CRUD operations
+
 // In-memory storage for mock data
 let events: Event[] = [...mockEvents];
 let eventEntries: EventEntry[] = [...mockEventEntries];
 
 // Event CRUD operations
 export const getEvents = (): Promise<Event[]> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL query: SELECT * FROM events ORDER BY date DESC
   return Promise.resolve([...events].sort((a, b) => b.date.getTime() - a.date.getTime()));
 };
 
 export const getEvent = (id: string): Promise<Event | undefined> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL query: SELECT * FROM events WHERE id = ?
   const event = events.find(e => e.id === id);
   return Promise.resolve(event);
 };
 
 export const createEvent = (eventData: Omit<Event, 'id' | 'createdAt'>): Promise<Event> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL query: INSERT INTO events (...) VALUES (...)
   const newEvent: Event = {
     ...eventData,
     id: `evt-${Date.now()}`,
@@ -34,6 +48,8 @@ export const createEvent = (eventData: Omit<Event, 'id' | 'createdAt'>): Promise
 };
 
 export const updateEvent = (id: string, eventData: Partial<Event>): Promise<Event | undefined> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL query: UPDATE events SET ... WHERE id = ?
   const index = events.findIndex(e => e.id === id);
   if (index === -1) return Promise.resolve(undefined);
   
@@ -52,6 +68,10 @@ export const updateEvent = (id: string, eventData: Partial<Event>): Promise<Even
 };
 
 export const deleteEvent = (id: string): Promise<boolean> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL queries: 
+  // 1. DELETE FROM event_entries WHERE event_id = ?
+  // 2. DELETE FROM events WHERE id = ?
   const initialLength = events.length;
   events = events.filter(e => e.id !== id);
   
@@ -69,6 +89,8 @@ export const deleteEvent = (id: string): Promise<boolean> => {
 
 // Event Entry CRUD operations
 export const getEventEntries = (eventId?: string): Promise<EventEntry[]> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL query: SELECT * FROM event_entries WHERE event_id = ? ORDER BY date DESC
   let filteredEntries = [...eventEntries];
   if (eventId) {
     filteredEntries = filteredEntries.filter(entry => entry.eventId === eventId);
@@ -77,11 +99,18 @@ export const getEventEntries = (eventId?: string): Promise<EventEntry[]> => {
 };
 
 export const getEventEntry = (id: string): Promise<EventEntry | undefined> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL query: SELECT * FROM event_entries WHERE id = ?
   const entry = eventEntries.find(e => e.id === id);
   return Promise.resolve(entry);
 };
 
 export const createEventEntry = (entryData: Omit<EventEntry, 'id' | 'createdAt'>): Promise<EventEntry> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL queries:
+  // 1. INSERT INTO event_entries (...) VALUES (...)
+  // 2. INSERT INTO promoters (entry_id, name, commission) VALUES (...)
+  // 3. INSERT INTO staff (entry_id, role, name, payment) VALUES (...)
   const newEntry: EventEntry = {
     ...entryData,
     id: `entry-${Date.now()}`,
@@ -98,6 +127,8 @@ export const createEventEntry = (entryData: Omit<EventEntry, 'id' | 'createdAt'>
 };
 
 export const updateEventEntry = (id: string, entryData: Partial<EventEntry>): Promise<EventEntry | undefined> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL query: UPDATE event_entries SET ... WHERE id = ?
   const index = eventEntries.findIndex(e => e.id === id);
   if (index === -1) return Promise.resolve(undefined);
   
@@ -116,6 +147,11 @@ export const updateEventEntry = (id: string, entryData: Partial<EventEntry>): Pr
 };
 
 export const deleteEventEntry = (id: string): Promise<boolean> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL queries:
+  // 1. DELETE FROM promoters WHERE entry_id = ?
+  // 2. DELETE FROM staff WHERE entry_id = ?
+  // 3. DELETE FROM event_entries WHERE id = ?
   const initialLength = eventEntries.length;
   eventEntries = eventEntries.filter(e => e.id !== id);
   
@@ -132,6 +168,8 @@ export const deleteEventEntry = (id: string): Promise<boolean> => {
 
 // Calculate event report
 export const calculateEventReport = async (eventId: string, entryId?: string): Promise<EventReport | null> => {
+  // TODO: Replace with MySQL query
+  // Example MySQL query: Use JOINs to get event and entry data together
   const event = await getEvent(eventId);
   if (!event) return null;
   
